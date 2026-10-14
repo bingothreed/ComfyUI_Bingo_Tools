@@ -1,0 +1,9 @@
+[project]
+name = "comfyui-bingo-tools"
+version = "0.1.0"
+description = "Utility nodes for ComfyUI, including H3 Motion Context helpers."
+requires-python = ">=3.10"
+dependencies = ["safetensors"]
+
+[tool.comfy]
+DisplayName = "Bingo Tools"
