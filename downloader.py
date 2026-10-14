@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import ipaddress
 import os
+import shutil
 import socket
 import tempfile
 import urllib.error
@@ -95,13 +96,74 @@ def validate_url(url: str, hosts: tuple[str, ...] | None = None) -> str:
 
 
 def _cache_dir() -> Path:
-    try:
-        import folder_paths
-        root = Path(folder_paths.get_temp_directory())
-    except (ImportError, AttributeError):
-        root = Path(tempfile.gettempdir())
-    target = root / "minimax_h3_runninghub"
+    """Directory for downloaded latents.
+
+    ``MINIMAX_H3_RUNNINGHUB_CACHE_DIR`` overrides the location entirely
+    (useful to keep downloads out of ComfyUI's temp folder, which is wiped
+    on restart). Otherwise the ComfyUI temp directory is used, with a
+    ``minimax_h3_runninghub`` subfolder, falling back to the system temp
+    directory outside ComfyUI.
+    """
+    override = os.environ.get("MINIMAX_H3_RUNNINGHUB_CACHE_DIR", "").strip()
+    if override:
+        target = Path(override).expanduser()
+    else:
+        try:
+            import folder_paths
+            root = Path(folder_paths.get_temp_directory())
+        except (ImportError, AttributeError):
+            root = Path(tempfile.gettempdir())
+        target = root / "minimax_h3_runninghub"
     target.mkdir(parents=True, exist_ok=True)
+    return target
+
+
+def sanitize_filename(name: str) -> str:
+    """Return a safe basename for the cache directory, always ending in .safetensors.
+
+    Strips directory components and characters that are illegal on Windows,
+    so a caller-provided display name can never escape the cache folder.
+    """
+    name = os.path.basename(str(name or "").strip().strip('"').strip("'"))
+    name = "".join(c for c in name if c not in '<>:"/\\|?*' and ord(c) >= 32)
+    name = name.strip(" .")
+    if not name:
+        raise ValueError("filename is empty after sanitizing")
+    if not name.lower().endswith(".safetensors"):
+        name += ".safetensors"
+    return name
+
+
+def named_cache_path(filename: str) -> Path:
+    """Path a user-named copy would take inside the download cache directory."""
+    return _cache_dir() / sanitize_filename(filename)
+
+
+def materialize_named(source: Path, filename: str) -> Path:
+    """Expose ``source`` under a user-chosen name in the cache directory.
+
+    Hardlinks first (same bytes, no extra disk), falls back to a copy when
+    the filesystem refuses. Atomic via a ``.part`` sibling + ``os.replace``.
+    If the target already exists with the same content it is left alone.
+    """
+    target = named_cache_path(filename)
+    try:
+        if target.is_file() and os.path.samefile(str(source), str(target)):
+            return target
+    except OSError:
+        pass
+    part = target.with_name(target.name + ".part")
+    try:
+        try:
+            os.link(source, part)
+        except OSError:
+            shutil.copy2(source, part)
+        os.replace(part, target)
+    finally:
+        try:
+            part.unlink()
+        except FileNotFoundError:
+            pass
     return target
 
 
@@ -134,13 +196,21 @@ def _download_once(url: str, max_bytes: int):
     raise DownloadError("latent URL redirected too many times")
 
 
-def download_cached(url: str, *, refresh: bool = False, max_bytes: int = MAX_DOWNLOAD_BYTES) -> Path:
+def download_cached(url: str, *, refresh: bool = False, max_bytes: int = MAX_DOWNLOAD_BYTES) -> tuple[Path, bool]:
+    """Download ``url`` into the local cache.
+
+    Returns ``(path, cached)`` where ``cached`` is True when an already
+    validated local file was reused instead of downloading.
+    """
     current = validate_url(url)
     key = hashlib.sha256(current.encode("utf-8")).hexdigest()
-    directory = _cache_dir()
+    try:
+        directory = _cache_dir()
+    except OSError as exc:
+        raise DownloadError("could not create the latent cache directory") from exc
     destination = directory / (key + ".safetensors")
     if destination.is_file() and not refresh:
-        return destination
+        return destination, True
 
     part = directory / (key + ".part")
     try:
@@ -166,7 +236,7 @@ def download_cached(url: str, *, refresh: bool = False, max_bytes: int = MAX_DOW
         if total == 0:
             raise DownloadError("latent download was empty")
         os.replace(part, destination)
-        return destination
+        return destination, False
     except (urllib.error.URLError, TimeoutError, OSError, ValueError) as exc:
         raise DownloadError("could not download the latent URL") from exc
     finally:

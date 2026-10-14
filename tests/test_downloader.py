@@ -59,11 +59,68 @@ class DownloaderTests(unittest.TestCase):
                 with self.create_temp_dir() as temporary:
                     directory = __import__("pathlib").Path(temporary)
                     cache_dir.return_value = directory
-                    result = downloader.download_cached(self.URL)
+                    result, cached = downloader.download_cached(self.URL)
                     self.assertEqual(result.read_bytes(), b"latent")
+                    self.assertFalse(cached)
                     self.assertFalse((directory / (result.stem + ".part")).exists())
-                    downloader.download_cached(self.URL)
+                    _again, cached_again = downloader.download_cached(self.URL)
+                    self.assertTrue(cached_again)
                     request.assert_called_once()
+
+    def test_sanitize_filename(self):
+        for raw, expected in (
+            ("clip_2.safetensors", "clip_2.safetensors"),
+            ("clip_2", "clip_2.safetensors"),
+            ("../clip_2.safetensors", "clip_2.safetensors"),
+            # basename first drops the directory part, then illegal chars.
+            ('sub/dir?clip*2.safetensors', "dirclip2.safetensors"),
+            ("  ", ValueError),
+            ("", ValueError),
+        ):
+            with self.subTest(raw=raw):
+                if expected is ValueError:
+                    with self.assertRaises(ValueError):
+                        downloader.sanitize_filename(raw)
+                else:
+                    self.assertEqual(downloader.sanitize_filename(raw), expected)
+
+    def test_materialize_named(self):
+        with mock.patch.object(downloader, "_cache_dir") as cache_dir:
+            with self.create_temp_dir() as temporary:
+                directory = __import__("pathlib").Path(temporary)
+                cache_dir.return_value = directory
+                source = directory / "source.safetensors"
+                source.write_bytes(b"latent")
+                target = downloader.materialize_named(source, "clip_2.safetensors")
+                self.assertEqual(target.name, "clip_2.safetensors")
+                self.assertEqual(target.read_bytes(), b"latent")
+                # Same source again: no error, same target.
+                again = downloader.materialize_named(source, "clip_2.safetensors")
+                self.assertEqual(again, target)
+
+    def test_cache_dir_env_override(self):
+        with self.create_temp_dir() as temporary:
+            custom = __import__("pathlib").Path(temporary) / "my_cache"
+            with mock.patch.dict(
+                "os.environ", {"MINIMAX_H3_RUNNINGHUB_CACHE_DIR": str(custom)}
+            ):
+                self.assertEqual(downloader._cache_dir(), custom)
+                self.assertTrue(custom.is_dir())
+        with mock.patch.dict(
+            "os.environ", {"MINIMAX_H3_RUNNINGHUB_CACHE_DIR": ""}
+        ):
+            default = downloader._cache_dir()
+            self.assertEqual(default.name, "minimax_h3_runninghub")
+
+    def test_download_reports_uncreatable_cache_dir(self):
+        bad = __import__("pathlib").Path(__file__).resolve()  # an existing FILE
+        with mock.patch.object(downloader, "_resolve_public"), \
+                mock.patch.dict(
+                    "os.environ",
+                    {"MINIMAX_H3_RUNNINGHUB_CACHE_DIR": str(bad)},
+                ):
+            with self.assertRaises(downloader.DownloadError):
+                downloader.download_cached(self.URL)
 
     def create_temp_dir(self):
         import tempfile

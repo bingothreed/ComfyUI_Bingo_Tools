@@ -17,7 +17,40 @@ as a normal custom node package, then restart ComfyUI.
 ```text
 H3 Motion Context Load Latent from URL.latent
     -> H3 Motion Context.context_latent
+H3 Motion Context Load Latent from URL.local_path
+    -> (optional) MiniMax H3 Load AV Latent.latent_path, to also decode
+       the previous clip's frames/audio for a Video Merge
+H3 Motion Context Load Latent from URL.status
+    -> (optional) a switch/if node to gate downstream work on success
 ```
+
+Inputs:
+
+- **latent_url** — complete direct `.safetensors` URL (RunningHub signed
+  query is preserved).
+- **refresh** — force a re-download instead of reusing the URL cache.
+- **filename** — optional display name for the downloaded file, e.g.
+  `clip_00002.safetensors`. Empty keeps the hash-named cache file. The name
+  is sanitized and stored inside the download cache directory (hardlinked,
+  no extra disk space).
+- **vae / audio_vae** (optional) — decode the same file to images/audio for
+  standalone verification or a Video Merge.
+
+Outputs:
+
+- **latent** — the paired video/audio latent for `context_latent`, or `None`
+  when the load failed.
+- **local_path** — absolute path of the downloaded file: the named copy when
+  `filename` is set, otherwise the hash-named cache file. Empty on failure.
+- **status** — `ok:cached` / `ok:downloaded` on success; on failure
+  `error:url: ...`, `error:download: ...` or `error:file: ...` with the
+  reason. Decode problems are appended as `decode:image:` / `decode:audio:`
+  notes. The node does not abort the graph; gate downstream nodes on this
+  output if a missing latent would otherwise break the workflow.
+- **images** — decoded frames of the downloaded clip (only when `vae` is
+  connected), or `None`.
+- **audio** — decoded soundtrack of the downloaded clip (only when
+  `audio_vae` is connected), or `None`.
 
 The URL must be the complete direct `.safetensors` URL, including RunningHub's
 rewritten filename suffix. The node downloads into ComfyUI's temporary cache,
@@ -31,6 +64,15 @@ By default only `https://rh-images-tos.xiaoyaoyou.com` is allowed. Additional
 hosts can be supplied with `MINIMAX_H3_RUNNINGHUB_ALLOWED_HOSTS`, as a
 comma-separated list. The node does not support cookies or authentication
 headers. RunningHub must permit outbound HTTPS from the execution container.
+
+Downloads are cached in `<ComfyUI>/temp/minimax_h3_runninghub/` (system temp
+directory outside ComfyUI). ComfyUI wipes its temp folder on restart, so
+point `MINIMAX_H3_RUNNINGHUB_CACHE_DIR` at a persistent location to keep
+latents across restarts, e.g.:
+
+```text
+MINIMAX_H3_RUNNINGHUB_CACHE_DIR=F:\ComfyUI-Datasets\output\h3_context
+```
 
 The returned latent is a context-only paired latent (`video` plus `audio`), not
 a general-purpose single-stream ComfyUI latent. Do not connect it to a stock
