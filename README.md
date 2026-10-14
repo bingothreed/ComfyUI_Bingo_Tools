@@ -1,11 +1,21 @@
 # Bingo Tools
 
+[English](README.md) | [中文](README_ZH.md)
+
 A collection of independent ComfyUI utility nodes. The first tool loads
 RunningHub-hosted MiniMax H3 AV latents for H3 Motion Context.
 
 This custom node loads a complete HTTPS URL produced by RunningHub's
 **MiniMax H3 Save AV Latent** node and returns the paired video/audio latent
 for `H3 Motion Context.context_latent`.
+
+## Screenshot
+
+![H3 Motion Context Load Latent from URL in ComfyUI](images/H3%20Motion%20Context%20Load%20Latent%20from%20URL.png)
+
+The node downloads the latent from the URL, decodes it with the MiniMax H3
+video/audio VAEs (optional inputs), and previews the frames — the whole
+verify loop stays inside ComfyUI.
 
 ## Installation
 
@@ -53,12 +63,16 @@ Outputs:
   `audio_vae` is connected), or `None`.
 
 The URL must be the complete direct `.safetensors` URL, including RunningHub's
-rewritten filename suffix. The node downloads into ComfyUI's temporary cache,
-not the output directory, so RunningHub cannot rename the cache file during the
-same execution.
+rewritten filename suffix.
 
 The other `H3 Motion Context.latent` input remains the latent for the clip being
 generated. The URL-loaded latent is the previous clip only.
+
+The returned latent is a context-only paired latent (`video` plus `audio`), not
+a general-purpose single-stream ComfyUI latent. Do not connect it to a stock
+VAE decode or sampler input.
+
+## Configuration
 
 By default only `https://rh-images-tos.xiaoyaoyou.com` is allowed. Additional
 hosts can be supplied with `MINIMAX_H3_RUNNINGHUB_ALLOWED_HOSTS`, as a
@@ -73,7 +87,3 @@ latents across restarts, e.g.:
 ```text
 MINIMAX_H3_RUNNINGHUB_CACHE_DIR=F:\ComfyUI-Datasets\output\h3_context
 ```
-
-The returned latent is a context-only paired latent (`video` plus `audio`), not
-a general-purpose single-stream ComfyUI latent. Do not connect it to a stock
-VAE decode or sampler input.
