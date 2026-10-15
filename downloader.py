@@ -38,6 +38,12 @@ class DownloadError(RuntimeError):
 
 
 def allowed_hosts() -> tuple[str, ...]:
+    """Hosts the node may download from (deployer-configurable).
+
+    Defaults to ``("*",)`` — any public HTTPS host. Deployers can restrict
+    via ``MINIMAX_H3_URL_ALLOWED_HOSTS`` (comma-separated hosts); the older
+    ``MINIMAX_H3_RUNNINGHUB_ALLOWED_HOSTS`` name still works.
+    """
     raw = (os.environ.get("MINIMAX_H3_URL_ALLOWED_HOSTS", "")
            or os.environ.get("MINIMAX_H3_RUNNINGHUB_ALLOWED_HOSTS", ""))  # legacy name
     configured = tuple(x.strip().lower().rstrip(".") for x in raw.split(",") if x.strip())

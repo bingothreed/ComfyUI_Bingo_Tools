@@ -68,21 +68,10 @@ URL 加载的 latent 只代表上一段。
 返回的 latent 是仅供上下文使用的配对 latent（`video` + `audio`），不是
 通用的单流 ComfyUI latent。不要把它接到原生 VAE 解码或采样器输入上。
 
-## 配置
+## 下载链接
 
 URL 必须是文件直链，不是渲染网页的分享页：用 GitHub 的 `raw` 链接、
 Hugging Face 的 resolve 链接、R2/S3 预签名下载链接等。OneDrive /
 Google Drive 的分享链接是网页——Google Drive 对超过约 100 MB 的文件
 还会插入病毒扫描确认页，本节点不处理该情况。文件必须是公开的：节点
 不会携带 cookie 或认证头。
-
-下载缓存位于 `<ComfyUI>/temp/minimax_h3_url/`。ComfyUI 重启时会清空
-temp 目录，因此如需让 latent 跨重启保留，请把 `MINIMAX_H3_URL_CACHE_DIR`
-指向一个持久位置，例如：
-
-```text
-MINIMAX_H3_URL_CACHE_DIR=F:\ComfyUI-Datasets\output\h3_context
-```
-
-（可选）共享环境如需限制允许的主机，可把 `MINIMAX_H3_URL_ALLOWED_HOSTS`
-设为逗号分隔的主机列表。
