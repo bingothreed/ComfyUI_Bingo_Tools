@@ -40,9 +40,11 @@ H3 Motion Context Load Latent from URL.status
   包括签名 query）。
 - **refresh** — 强制重新下载，而不是复用 URL 缓存。
 - **filename** — 下载文件的可选显示名，如 `clip_00002.safetensors`；
-  支持子目录，如 `video/clip_00002.safetensors`。命名副本存放在
-  ComfyUI 的 output 目录（从下载缓存硬链接，不占额外磁盘）。留空则
-  使用哈希命名的缓存文件。
+  支持子目录，如 `video/clip_00002.safetensors`。留空则使用哈希命名的
+  缓存文件。
+- **save_to_temp** — 命名副本的存放位置：开（默认）留在下载缓存
+  （ComfyUI 的 temp 目录）；关则存到 ComfyUI 的 output 目录。从下载
+  缓存硬链接，不占额外磁盘。
 - **vae / audio_vae**（可选）— 把同一份文件解码为画面/音频，用于
   独立验证或 Video Merge 拼接。
 
@@ -50,8 +52,9 @@ H3 Motion Context Load Latent from URL.status
 
 - **latent** — 配对的视频/音频 latent，用于 `context_latent`；
   加载失败时为 `None`。
-- **local_path** — 下载文件的绝对路径：设置了 `filename` 时为 ComfyUI
-  output 目录下的命名副本，否则为哈希命名的缓存文件。失败时为空。
+- **local_path** — 下载文件的绝对路径：设置了 `filename` 时为命名副本
+  （默认在下载缓存，`save_to_temp` 关闭时在 ComfyUI output 目录），
+  否则为哈希命名的缓存文件。失败时为空。
 - **status** — 成功时为 `ok:cached` / `ok:downloaded`；失败时为
   `error:url: ...`、`error:download: ...` 或 `error:file: ...` 并附原因。
   解码问题以 `decode:image:` / `decode:audio:` 注记追加。节点不会中断

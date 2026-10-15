@@ -21,7 +21,7 @@ try:
         URLPolicyError,
         download_cached,
         materialize_named,
-        named_output_path,
+        named_path,
     )
 except ImportError:  # Allows direct loading by lightweight unit-test runners.
     from downloader import (
@@ -29,7 +29,7 @@ except ImportError:  # Allows direct loading by lightweight unit-test runners.
         URLPolicyError,
         download_cached,
         materialize_named,
-        named_output_path,
+        named_path,
     )
 
 
@@ -99,8 +99,12 @@ class MiniMaxH3LoadAVLatentFromURL:
                     "default": "",
                     "tooltip": "Optional name for the downloaded file, e.g. clip_00002.safetensors "
                                "or video/clip_00002.safetensors. Empty keeps the hash-named cache "
-                               "file. The name is sanitized and stored inside ComfyUI's output "
-                               "directory; local_path points at it.",
+                               "file. The name is sanitized; local_path points at the named copy.",
+                }),
+                "save_to_temp": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "Store the named copy (see filename) in the download cache inside "
+                               "ComfyUI's temp folder; off stores it in ComfyUI's output directory.",
                 }),
             },
             "optional": {
@@ -137,7 +141,7 @@ class MiniMaxH3LoadAVLatentFromURL:
     )
 
     @classmethod
-    def IS_CHANGED(cls, latent_url, refresh=False, filename="", vae=None, audio_vae=None):
+    def IS_CHANGED(cls, latent_url, refresh=False, filename="", save_to_temp=True, vae=None, audio_vae=None):
         if not str(latent_url or "").strip():
             return "empty"
         if refresh:
@@ -146,7 +150,7 @@ class MiniMaxH3LoadAVLatentFromURL:
             path, _cached = download_cached(latent_url)
             name = str(filename or "").strip()
             if name:
-                named = named_output_path(name)
+                named = named_path(name, bool(save_to_temp))
                 if not named.is_file():
                     # The named copy does not exist yet: force execution so
                     # load() materializes it instead of serving a stale cache.
@@ -203,7 +207,7 @@ class MiniMaxH3LoadAVLatentFromURL:
                 notes.append("decode:audio: %s" % exc)
         return images, audio_out, notes
 
-    def load(self, latent_url, refresh=False, filename="", vae=None, audio_vae=None):
+    def load(self, latent_url, refresh=False, filename="", save_to_temp=True, vae=None, audio_vae=None):
         if not str(latent_url or "").strip():
             return (None, "", "error:url: latent URL is empty", None, None)
         try:
@@ -214,7 +218,7 @@ class MiniMaxH3LoadAVLatentFromURL:
             return (None, "", "error:download: %s" % exc, None, None)
         try:
             if str(filename or "").strip():
-                path = materialize_named(path, filename)
+                path = materialize_named(path, filename, bool(save_to_temp))
         except (ValueError, OSError) as exc:
             return (None, str(path), "error:file: %s" % exc, None, None)
         try:

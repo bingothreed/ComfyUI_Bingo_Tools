@@ -165,6 +165,19 @@ class DownloaderTests(unittest.TestCase):
                 self.assertEqual(target, directory / "video" / "clip_0001.safetensors")
                 self.assertEqual(target.read_bytes(), b"latent")
 
+    def test_materialize_named_into_cache_when_to_temp(self):
+        with mock.patch.object(downloader, "output_root") as output_root, \
+                mock.patch.object(downloader, "_cache_dir") as cache_dir:
+            with self.create_temp_dir() as temporary:
+                directory = __import__("pathlib").Path(temporary)
+                cache_dir.return_value = directory
+                output_root.return_value = directory / "output"
+                source = directory / "source.safetensors"
+                source.write_bytes(b"latent")
+                target = downloader.materialize_named(source, "clip.safetensors", True)
+                self.assertEqual(target, directory / "clip.safetensors")
+                self.assertEqual(target.read_bytes(), b"latent")
+
     def test_output_root_uses_comfyui_output_dir(self):
         import types
         fake = types.ModuleType("folder_paths")

@@ -169,19 +169,21 @@ def output_root() -> Path:
         return _cache_dir()
 
 
-def named_output_path(filename: str) -> Path:
-    """Path a user-named copy would take inside ComfyUI's output directory."""
-    return output_root() / sanitize_filename(filename)
+def named_path(filename: str, to_temp: bool = False) -> Path:
+    """Path a user-named copy would take: the download cache or ComfyUI's output dir."""
+    root = _cache_dir() if to_temp else output_root()
+    return root / sanitize_filename(filename)
 
 
-def materialize_named(source: Path, filename: str) -> Path:
+def materialize_named(source: Path, filename: str, to_temp: bool = False) -> Path:
     """Expose ``source`` under a user-chosen name in ComfyUI's output directory.
 
+    With ``to_temp`` True the named copy goes to the download cache instead.
     Hardlinks first (same bytes, no extra disk), falls back to a copy when
     the filesystem refuses. Atomic via a ``.part`` sibling + ``os.replace``.
     If the target already exists with the same content it is left alone.
     """
-    target = named_output_path(filename)
+    target = named_path(filename, to_temp)
     try:
         if target.is_file() and os.path.samefile(str(source), str(target)):
             return target

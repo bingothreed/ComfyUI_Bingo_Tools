@@ -58,12 +58,38 @@ class NodeContractTests(unittest.TestCase):
                 latent, path, status, images, audio = nodes.MiniMaxH3LoadAVLatentFromURL().load(
                     "https://example.invalid/a.safetensors", filename="clip_00002"
                 )
-            materialize.assert_called_once_with(source, "clip_00002")
+            materialize.assert_called_once_with(source, "clip_00002", True)
             self.assertEqual(path, str(named))
             self.assertEqual(status, "ok:cached")
             self.assertEqual(latent, {"samples": ["video", "audio"]})
             self.assertIsNone(images)
             self.assertIsNone(audio)
+
+    def test_load_with_save_to_temp_off_stores_in_output_dir(self):
+        import tempfile
+        from pathlib import Path
+        from unittest import mock
+
+        import nodes
+
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "hash.safetensors"
+            source.write_bytes(b"x")
+            named = Path(temporary) / "clip_00002.safetensors"
+            with mock.patch.object(
+                nodes, "download_cached", return_value=(source, True)
+            ), mock.patch.object(
+                nodes, "materialize_named", return_value=named
+            ) as materialize, mock.patch.object(
+                nodes, "_load_streams", return_value={"samples": ["video", "audio"]}
+            ):
+                _latent, path, status, _images, _audio = nodes.MiniMaxH3LoadAVLatentFromURL().load(
+                    "https://example.invalid/a.safetensors",
+                    filename="clip_00002", save_to_temp=False,
+                )
+            materialize.assert_called_once_with(source, "clip_00002", False)
+            self.assertEqual(path, str(named))
+            self.assertEqual(status, "ok:cached")
 
     def test_load_with_vae_decodes_images(self):
         import tempfile
