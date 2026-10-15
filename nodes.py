@@ -65,7 +65,7 @@ def _load_streams(path: Path):
 
 
 class MiniMaxH3LoadAVLatentFromURL:
-    """Download a RunningHub AV safetensors file for Motion Context only.
+    """Download a MiniMax H3 AV safetensors file for Motion Context only.
 
     Soft-fails: download or parse problems are reported through the
     ``status`` output ("error:...") instead of aborting the graph, with

@@ -1,4 +1,4 @@
-"""Load MiniMax H3 AV latents from RunningHub CDN URLs."""
+"""Load MiniMax H3 AV latents from direct HTTPS URLs."""
 
 from .nodes import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
 

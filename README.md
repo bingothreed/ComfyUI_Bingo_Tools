@@ -6,9 +6,10 @@ A collection of independent ComfyUI utility nodes. The first tool loads
 MiniMax H3 AV latents from a direct HTTPS URL for H3 Motion Context.
 
 This custom node downloads a complete HTTPS URL pointing to a MiniMax H3 AV
-latent file — typically one produced by RunningHub's **MiniMax H3 Save AV
-Latent** node, but any direct file URL works — and returns the paired
-video/audio latent for `H3 Motion Context.context_latent`.
+latent file — typically one produced by the **MiniMax H3 Save AV Latent**
+node, but any direct file URL works — and returns the paired video/audio
+latent for `H3 Motion Context.context_latent`. It works on RunningHub and
+local ComfyUI alike.
 
 ## Screenshot
 
@@ -78,23 +79,24 @@ VAE decode or sampler input.
 The node accepts any direct HTTPS URL (GitHub raw, Hugging Face, R2/S3
 presigned URLs, ...). By default the host allowlist contains only
 `rh-images-tos.xiaoyaoyou.com`, the host that usually serves H3 latents;
-add more hosts with `MINIMAX_H3_RUNNINGHUB_ALLOWED_HOSTS` (comma-separated),
+add more hosts with `MINIMAX_H3_URL_ALLOWED_HOSTS` (comma-separated),
 or set it to `*` to accept any host. Every URL must still use HTTPS and
 resolve to a public address (localhost/private-network URLs stay blocked).
 The node does not support cookies or authentication headers, so use public
 direct file hosts. The ComfyUI host or execution container must permit
-outbound HTTPS.
+outbound HTTPS. The older `MINIMAX_H3_RUNNINGHUB_*` variable names still
+work.
 
 Note: OneDrive/Google Drive share links are HTML pages, not the file itself —
 use a direct download URL. Google Drive adds a virus-scan confirmation page
 for files over ~100 MB, which this node does not handle; prefer direct file
 hosts (GitHub Releases, Hugging Face, R2/S3 presigned URLs) for latents.
 
-Downloads are cached in `<ComfyUI>/temp/minimax_h3_runninghub/` (system temp
+Downloads are cached in `<ComfyUI>/temp/minimax_h3_url/` (system temp
 directory outside ComfyUI). ComfyUI wipes its temp folder on restart, so
-point `MINIMAX_H3_RUNNINGHUB_CACHE_DIR` at a persistent location to keep
+point `MINIMAX_H3_URL_CACHE_DIR` at a persistent location to keep
 latents across restarts, e.g.:
 
 ```text
-MINIMAX_H3_RUNNINGHUB_CACHE_DIR=F:\ComfyUI-Datasets\output\h3_context
+MINIMAX_H3_URL_CACHE_DIR=F:\ComfyUI-Datasets\output\h3_context
 ```

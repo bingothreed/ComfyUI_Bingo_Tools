@@ -6,9 +6,9 @@
 HTTPS URL 加载 MiniMax H3 音视频（AV）潜空间文件。
 
 该节点下载指向 MiniMax H3 AV latent 文件的完整 HTTPS 直链——通常是
-RunningHub 的 **MiniMax H3 Save AV Latent** 节点产出的文件，但任何直链
-文件 URL 都可以——返回配对的视频/音频 latent，用于
-`H3 Motion Context.context_latent`。
+**MiniMax H3 Save AV Latent** 节点产出的文件，但任何直链文件 URL 都
+可以——返回配对的视频/音频 latent，用于
+`H3 Motion Context.context_latent`。RunningHub 和本地 ComfyUI 都能用。
 
 ## 截图
 
@@ -72,21 +72,22 @@ URL 加载的 latent 只代表上一段。
 
 节点接受任意 HTTPS 直链（GitHub raw、Hugging Face、R2/S3 预签名 URL
 等）。默认主机白名单只包含 `rh-images-tos.xiaoyaoyou.com`（H3 latent
-通常所在的主机）；更多主机可通过 `MINIMAX_H3_RUNNINGHUB_ALLOWED_HOSTS`
+通常所在的主机）；更多主机可通过 `MINIMAX_H3_URL_ALLOWED_HOSTS`
 以逗号分隔列表添加，设为 `*` 即接受任意主机。无论是否使用通配符，URL
 都必须使用 HTTPS 且解析到公网地址（localhost / 内网地址仍然会被拒绝）。
 节点不支持 cookie 或认证头，因此请使用公开的直链文件托管。ComfyUI
-所在主机或执行容器必须允许出站 HTTPS。
+所在主机或执行容器必须允许出站 HTTPS。旧的 `MINIMAX_H3_RUNNINGHUB_*`
+变量名仍然有效。
 
 注意：OneDrive / Google Drive 的分享链接是网页而不是文件本身，请使用
 直链。Google Drive 对超过约 100 MB 的文件会插入病毒扫描确认页，本节点
 不处理该情况；latent 建议放在直链文件托管上（GitHub Releases、
 Hugging Face、R2/S3 预签名 URL 等）。
 
-下载缓存位于 `<ComfyUI>/temp/minimax_h3_runninghub/`（脱离 ComfyUI 运行时
+下载缓存位于 `<ComfyUI>/temp/minimax_h3_url/`（脱离 ComfyUI 运行时
 为系统临时目录）。ComfyUI 重启时会清空 temp 目录，因此如需让 latent
-跨重启保留，请把 `MINIMAX_H3_RUNNINGHUB_CACHE_DIR` 指向一个持久位置，例如：
+跨重启保留，请把 `MINIMAX_H3_URL_CACHE_DIR` 指向一个持久位置，例如：
 
 ```text
-MINIMAX_H3_RUNNINGHUB_CACHE_DIR=F:\ComfyUI-Datasets\output\h3_context
+MINIMAX_H3_URL_CACHE_DIR=F:\ComfyUI-Datasets\output\h3_context
 ```

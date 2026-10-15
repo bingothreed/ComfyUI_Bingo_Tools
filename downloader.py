@@ -36,7 +36,8 @@ class DownloadError(RuntimeError):
 
 
 def allowed_hosts() -> tuple[str, ...]:
-    raw = os.environ.get("MINIMAX_H3_RUNNINGHUB_ALLOWED_HOSTS", "")
+    raw = (os.environ.get("MINIMAX_H3_URL_ALLOWED_HOSTS", "")
+           or os.environ.get("MINIMAX_H3_RUNNINGHUB_ALLOWED_HOSTS", ""))  # legacy name
     configured = tuple(x.strip().lower().rstrip(".") for x in raw.split(",") if x.strip())
     return configured or DEFAULT_ALLOWED_HOSTS
 
@@ -94,20 +95,21 @@ def validate_url(url: str, hosts: tuple[str, ...] | None = None) -> str:
     # Allowlist skipped only when the user opted into "*" — the host must
     # still resolve to a public address (SSRF guard stays in effect).
     _resolve_public(host)
-    # Keep the query exactly as supplied: RunningHub URLs may be signed.
+    # Keep the query exactly as supplied: CDN URLs may be signed.
     return urllib.parse.urlunsplit(("https", host, parsed.path, parsed.query, ""))
 
 
 def _cache_dir() -> Path:
     """Directory for downloaded latents.
 
-    ``MINIMAX_H3_RUNNINGHUB_CACHE_DIR`` overrides the location entirely
+    ``MINIMAX_H3_URL_CACHE_DIR`` overrides the location entirely
     (useful to keep downloads out of ComfyUI's temp folder, which is wiped
     on restart). Otherwise the ComfyUI temp directory is used, with a
-    ``minimax_h3_runninghub`` subfolder, falling back to the system temp
+    ``minimax_h3_url`` subfolder, falling back to the system temp
     directory outside ComfyUI.
     """
-    override = os.environ.get("MINIMAX_H3_RUNNINGHUB_CACHE_DIR", "").strip()
+    override = (os.environ.get("MINIMAX_H3_URL_CACHE_DIR", "").strip()
+                or os.environ.get("MINIMAX_H3_RUNNINGHUB_CACHE_DIR", "").strip())  # legacy name
     if override:
         target = Path(override).expanduser()
     else:
@@ -116,7 +118,7 @@ def _cache_dir() -> Path:
             root = Path(folder_paths.get_temp_directory())
         except (ImportError, AttributeError):
             root = Path(tempfile.gettempdir())
-        target = root / "minimax_h3_runninghub"
+        target = root / "minimax_h3_url"
     target.mkdir(parents=True, exist_ok=True)
     return target
 
@@ -171,7 +173,7 @@ def materialize_named(source: Path, filename: str) -> Path:
 
 
 def _request(url: str):
-    request = urllib.request.Request(url, headers={"User-Agent": "ComfyUI-MiniMax-H3-RunningHub/0.1"})
+    request = urllib.request.Request(url, headers={"User-Agent": "ComfyUI-Bingo-Tools/0.1"})
     return _OPENER.open(request, timeout=60)
 
 
