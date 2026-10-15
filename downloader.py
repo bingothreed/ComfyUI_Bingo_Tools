@@ -21,7 +21,9 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
 
 _OPENER = urllib.request.build_opener(_NoRedirect)
 
-DEFAULT_ALLOWED_HOSTS = ("rh-images-tos.xiaoyaoyou.com",)
+# Default: any public HTTPS host. Set MINIMAX_H3_URL_ALLOWED_HOSTS to a
+# comma-separated host list to restrict, e.g. on shared or multi-user setups.
+DEFAULT_ALLOWED_HOSTS = ("*",)
 MAX_DOWNLOAD_BYTES = 4 * 1024 * 1024 * 1024
 READ_CHUNK_BYTES = 8 * 1024 * 1024
 MAX_REDIRECTS = 3

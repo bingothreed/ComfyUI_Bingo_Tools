@@ -76,14 +76,14 @@ VAE decode or sampler input.
 ## Configuration
 
 The node accepts any direct HTTPS URL (GitHub raw, Hugging Face, R2/S3
-presigned URLs, ...). By default the host allowlist contains only
-`rh-images-tos.xiaoyaoyou.com`, the host that usually serves H3 latents;
-add more hosts with `MINIMAX_H3_URL_ALLOWED_HOSTS` (comma-separated),
-or set it to `*` to accept any host. Every URL must still use HTTPS and
-resolve to a public address (localhost/private-network URLs stay blocked).
-The node does not support cookies or authentication headers, so use public
-direct file hosts. The ComfyUI host or execution container must permit
-outbound HTTPS.
+presigned URLs, ...). Every URL must use HTTPS, carry no credentials, and
+resolve to a public address (localhost/private-network URLs are blocked);
+downloads are capped at 4 GB. To restrict which hosts are allowed — for
+example on a shared or multi-user setup — set
+`MINIMAX_H3_URL_ALLOWED_HOSTS` to a comma-separated host list. The node
+does not support cookies or authentication headers, so use public direct
+file hosts. The ComfyUI host or execution container must permit outbound
+HTTPS.
 
 Note: OneDrive/Google Drive share links are HTML pages, not the file itself —
 use a direct download URL. Google Drive adds a virus-scan confirmation page

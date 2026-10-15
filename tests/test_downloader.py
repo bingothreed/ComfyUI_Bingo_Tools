@@ -43,13 +43,32 @@ class DownloaderTests(unittest.TestCase):
             "http://rh-images-tos.xiaoyaoyou.com/a",
             "https://user:pass@rh-images-tos.xiaoyaoyou.com/a",
             "https://rh-images-tos.xiaoyaoyou.com/a#fragment",
-            "https://evilrh-images-tos.xiaoyaoyou.com/a",
-            "https://127.0.0.1/a",
+            "https://rh-images-tos.xiaoyaoyou.com:8443/a",
         ):
             with self.subTest(value=value):
                 with self.assertRaises(downloader.URLPolicyError):
                     with mock.patch.object(downloader, "_resolve_public"):
                         downloader.validate_url(value)
+
+    def test_default_policy_allows_any_public_host(self):
+        with mock.patch.object(downloader, "_resolve_public"):
+            result = downloader.validate_url(
+                "https://cdn.example.com/clip.safetensors?sig=1"
+            )
+        self.assertEqual(
+            result, "https://cdn.example.com/clip.safetensors?sig=1"
+        )
+
+    def test_env_restricts_hosts(self):
+        with mock.patch.object(downloader, "_resolve_public"):
+            with mock.patch.dict(
+                "os.environ",
+                {"MINIMAX_H3_URL_ALLOWED_HOSTS": "rh-images-tos.xiaoyaoyou.com"},
+            ):
+                with self.assertRaises(downloader.URLPolicyError):
+                    downloader.validate_url(
+                        "https://cdn.example.com/clip.safetensors"
+                    )
 
     def test_wildcard_allows_any_public_host(self):
         with mock.patch.object(downloader, "_resolve_public"):

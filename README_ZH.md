@@ -71,12 +71,11 @@ URL 加载的 latent 只代表上一段。
 ## 配置
 
 节点接受任意 HTTPS 直链（GitHub raw、Hugging Face、R2/S3 预签名 URL
-等）。默认主机白名单只包含 `rh-images-tos.xiaoyaoyou.com`（H3 latent
-通常所在的主机）；更多主机可通过 `MINIMAX_H3_URL_ALLOWED_HOSTS`
-以逗号分隔列表添加，设为 `*` 即接受任意主机。无论是否使用通配符，URL
-都必须使用 HTTPS 且解析到公网地址（localhost / 内网地址仍然会被拒绝）。
-节点不支持 cookie 或认证头，因此请使用公开的直链文件托管。ComfyUI
-所在主机或执行容器必须允许出站 HTTPS。
+等）。每条 URL 必须使用 HTTPS、不带凭据，且解析到公网地址（localhost /
+内网地址会被拒绝）；单次下载上限 4 GB。如需限制允许的主机——例如在
+共享或多用户环境——可把 `MINIMAX_H3_URL_ALLOWED_HOSTS` 设为逗号分隔的
+主机列表。节点不支持 cookie 或认证头，因此请使用公开的直链文件托管。
+ComfyUI 所在主机或执行容器必须允许出站 HTTPS。
 
 注意：OneDrive / Google Drive 的分享链接是网页而不是文件本身，请使用
 直链。Google Drive 对超过约 100 MB 的文件会插入病毒扫描确认页，本节点
