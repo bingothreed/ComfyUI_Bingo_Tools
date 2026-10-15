@@ -265,6 +265,11 @@ def download_cached(url: str, *, refresh: bool = False, max_bytes: int = MAX_DOW
             status = getattr(response, "status", 200)
             if status < 200 or status >= 300:
                 raise DownloadError("latent URL returned HTTP %s" % status)
+            content_type = (response.headers.get("Content-Type") or "").lower()
+            if "text/html" in content_type:
+                raise DownloadError(
+                    "URL returned an HTML page instead of a file; use a direct download link"
+                )
             length = response.headers.get("Content-Length")
             if length and int(length) > max_bytes:
                 raise DownloadError("latent download exceeds the size limit")

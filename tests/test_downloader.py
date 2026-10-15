@@ -120,6 +120,19 @@ class DownloaderTests(unittest.TestCase):
                     self.assertTrue(cached_again)
                     request.assert_called_once()
 
+    def test_download_rejects_html_pages(self):
+        response = _Response(b"<!DOCTYPE html><html></html>")
+        response.headers["Content-Type"] = "text/html; charset=utf-8"
+        with mock.patch.object(downloader, "_resolve_public"), \
+                mock.patch.object(downloader, "_cache_dir") as cache_dir, \
+                mock.patch.object(downloader, "_request", return_value=response):
+            with self.create_temp_dir() as temporary:
+                directory = __import__("pathlib").Path(temporary)
+                cache_dir.return_value = directory
+                with self.assertRaises(downloader.DownloadError) as ctx:
+                    downloader.download_cached(self.URL)
+                self.assertIn("HTML page", str(ctx.exception))
+
     def test_sanitize_filename(self):
         for raw, expected in (
             ("clip_2.safetensors", "clip_2.safetensors"),
