@@ -51,6 +51,40 @@ class DownloaderTests(unittest.TestCase):
                     with mock.patch.object(downloader, "_resolve_public"):
                         downloader.validate_url(value)
 
+    def test_wildcard_allows_any_public_host(self):
+        with mock.patch.object(downloader, "_resolve_public"):
+            with mock.patch.dict(
+                "os.environ", {"MINIMAX_H3_RUNNINGHUB_ALLOWED_HOSTS": "*"}
+            ):
+                result = downloader.validate_url(
+                    "https://cdn.example.com/clip.safetensors?sig=1"
+                )
+        self.assertEqual(
+            result, "https://cdn.example.com/clip.safetensors?sig=1"
+        )
+
+    def test_wildcard_allows_public_ip_literal(self):
+        with mock.patch.dict(
+            "os.environ", {"MINIMAX_H3_RUNNINGHUB_ALLOWED_HOSTS": "*"}
+        ):
+            result = downloader.validate_url(
+                "https://8.8.8.8/clip.safetensors"
+            )
+        self.assertEqual(result, "https://8.8.8.8/clip.safetensors")
+
+    def test_wildcard_still_blocks_private_addresses(self):
+        for value in (
+            "https://127.0.0.1/clip.safetensors",
+            "https://192.168.1.5/clip.safetensors",
+            "https://169.254.169.254/latest/meta-data",
+        ):
+            with self.subTest(value=value):
+                with mock.patch.dict(
+                    "os.environ", {"MINIMAX_H3_RUNNINGHUB_ALLOWED_HOSTS": "*"}
+                ):
+                    with self.assertRaises(downloader.URLPolicyError):
+                        downloader.validate_url(value)
+
     def test_download_is_atomic_and_cached(self):
         with self.subTest("download"):
             with mock.patch.object(downloader, "_resolve_public"), \

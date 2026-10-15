@@ -89,7 +89,7 @@ class MiniMaxH3LoadAVLatentFromURL:
                 "latent_url": ("STRING", {
                     "default": "https://rh-images-tos.xiaoyaoyou.com/",
                     "multiline": True,
-                    "tooltip": "Complete HTTPS CDN URL of a MiniMax H3 Save AV Latent file.",
+                    "tooltip": "Complete direct HTTPS URL of a MiniMax H3 Save AV Latent file.",
                 }),
                 "refresh": ("BOOLEAN", {
                     "default": False,

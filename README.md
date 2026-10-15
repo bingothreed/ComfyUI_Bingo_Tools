@@ -3,11 +3,12 @@
 [English](README.md) | [中文](README_ZH.md)
 
 A collection of independent ComfyUI utility nodes. The first tool loads
-RunningHub-hosted MiniMax H3 AV latents for H3 Motion Context.
+MiniMax H3 AV latents from a direct HTTPS URL for H3 Motion Context.
 
-This custom node loads a complete HTTPS URL produced by RunningHub's
-**MiniMax H3 Save AV Latent** node and returns the paired video/audio latent
-for `H3 Motion Context.context_latent`.
+This custom node downloads a complete HTTPS URL pointing to a MiniMax H3 AV
+latent file — typically one produced by RunningHub's **MiniMax H3 Save AV
+Latent** node, but any direct file URL works — and returns the paired
+video/audio latent for `H3 Motion Context.context_latent`.
 
 ## Screenshot
 
@@ -36,8 +37,8 @@ H3 Motion Context Load Latent from URL.status
 
 Inputs:
 
-- **latent_url** — complete direct `.safetensors` URL (RunningHub signed
-  query is preserved).
+- **latent_url** — complete direct `.safetensors` URL (query strings, e.g.
+  signed ones, are preserved).
 - **refresh** — force a re-download instead of reusing the URL cache.
 - **filename** — optional display name for the downloaded file, e.g.
   `clip_00002.safetensors`. Empty keeps the hash-named cache file. The name
@@ -62,8 +63,8 @@ Outputs:
 - **audio** — decoded soundtrack of the downloaded clip (only when
   `audio_vae` is connected), or `None`.
 
-The URL must be the complete direct `.safetensors` URL, including RunningHub's
-rewritten filename suffix.
+The URL must be the complete direct `.safetensors` URL — a raw file URL, not
+a share page that renders HTML (see Configuration).
 
 The other `H3 Motion Context.latent` input remains the latent for the clip being
 generated. The URL-loaded latent is the previous clip only.
@@ -74,10 +75,20 @@ VAE decode or sampler input.
 
 ## Configuration
 
-By default only `https://rh-images-tos.xiaoyaoyou.com` is allowed. Additional
-hosts can be supplied with `MINIMAX_H3_RUNNINGHUB_ALLOWED_HOSTS`, as a
-comma-separated list. The node does not support cookies or authentication
-headers. RunningHub must permit outbound HTTPS from the execution container.
+The node accepts any direct HTTPS URL (GitHub raw, Hugging Face, R2/S3
+presigned URLs, ...). By default the host allowlist contains only
+`rh-images-tos.xiaoyaoyou.com`, the host that usually serves H3 latents;
+add more hosts with `MINIMAX_H3_RUNNINGHUB_ALLOWED_HOSTS` (comma-separated),
+or set it to `*` to accept any host. Every URL must still use HTTPS and
+resolve to a public address (localhost/private-network URLs stay blocked).
+The node does not support cookies or authentication headers, so use public
+direct file hosts. The ComfyUI host or execution container must permit
+outbound HTTPS.
+
+Note: OneDrive/Google Drive share links are HTML pages, not the file itself —
+use a direct download URL. Google Drive adds a virus-scan confirmation page
+for files over ~100 MB, which this node does not handle; prefer direct file
+hosts (GitHub Releases, Hugging Face, R2/S3 presigned URLs) for latents.
 
 Downloads are cached in `<ComfyUI>/temp/minimax_h3_runninghub/` (system temp
 directory outside ComfyUI). ComfyUI wipes its temp folder on restart, so

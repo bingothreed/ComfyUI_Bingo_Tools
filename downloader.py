@@ -81,15 +81,18 @@ def validate_url(url: str, hosts: tuple[str, ...] | None = None) -> str:
         host = parsed.hostname.encode("idna").decode("ascii").lower().rstrip(".")
     except UnicodeError as exc:
         raise URLPolicyError("latent URL hostname is invalid") from exc
-    try:
-        ipaddress.ip_address(host)
-    except ValueError:
-        pass
-    else:
-        raise URLPolicyError("latent URL must use an allowlisted hostname")
     hosts = hosts or allowed_hosts()
-    if not _host_allowed(host, hosts):
-        raise URLPolicyError("latent URL hostname is not allowlisted")
+    if "*" not in hosts:
+        try:
+            ipaddress.ip_address(host)
+        except ValueError:
+            pass
+        else:
+            raise URLPolicyError("latent URL must use an allowlisted hostname")
+        if not _host_allowed(host, hosts):
+            raise URLPolicyError("latent URL hostname is not allowlisted")
+    # Allowlist skipped only when the user opted into "*" — the host must
+    # still resolve to a public address (SSRF guard stays in effect).
     _resolve_public(host)
     # Keep the query exactly as supplied: RunningHub URLs may be signed.
     return urllib.parse.urlunsplit(("https", host, parsed.path, parsed.query, ""))
