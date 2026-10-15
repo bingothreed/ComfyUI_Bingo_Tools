@@ -41,9 +41,10 @@ Inputs:
   signed ones, are preserved).
 - **refresh** — force a re-download instead of reusing the URL cache.
 - **filename** — optional display name for the downloaded file, e.g.
-  `clip_00002.safetensors`. Empty keeps the hash-named cache file. The name
-  is sanitized and stored inside the download cache directory (hardlinked,
-  no extra disk space).
+  `clip_00002.safetensors`; subdirectories like
+  `video/clip_00002.safetensors` are allowed. Empty keeps the hash-named
+  cache file. The name is sanitized and stored inside the download cache
+  directory (hardlinked, no extra disk space).
 - **vae / audio_vae** (optional) — decode the same file to images/audio for
   standalone verification or a Video Merge.
 

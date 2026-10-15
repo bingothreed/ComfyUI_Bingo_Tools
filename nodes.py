@@ -97,9 +97,10 @@ class MiniMaxH3LoadAVLatentFromURL:
                 }),
                 "filename": ("STRING", {
                     "default": "",
-                    "tooltip": "Optional name for the downloaded file, e.g. clip_00002.safetensors. "
-                               "Empty keeps the hash-named cache file. The name is sanitized and "
-                               "stored inside the download cache directory; local_path points at it.",
+                    "tooltip": "Optional name for the downloaded file, e.g. clip_00002.safetensors "
+                               "or video/clip_00002.safetensors. Empty keeps the hash-named cache "
+                               "file. The name is sanitized and stored inside the download cache "
+                               "directory; local_path points at it.",
                 }),
             },
             "optional": {

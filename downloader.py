@@ -132,19 +132,32 @@ def _cache_dir() -> Path:
 
 
 def sanitize_filename(name: str) -> str:
-    """Return a safe basename for the cache directory, always ending in .safetensors.
+    """Return a safe relative path for the cache directory, always ending in .safetensors.
 
-    Strips directory components and characters that are illegal on Windows,
-    so a caller-provided display name can never escape the cache folder.
+    Supports subdirectories (``video/clip.safetensors``); each component is
+    stripped of characters that are illegal on Windows, and traversal or
+    empty components are dropped, so a caller-provided display name can
+    never escape the cache folder.
     """
-    name = os.path.basename(str(name or "").strip().strip('"').strip("'"))
-    name = "".join(c for c in name if c not in '<>:"/\\|?*' and ord(c) >= 32)
-    name = name.strip(" .")
-    if not name:
+    name = str(name or "").strip().strip('"').strip("'")
+    parts = []
+    for part in name.replace("\\", "/").split("/"):
+        part = "".join(c for c in part if c not in '<>:"|?*' and ord(c) >= 32)
+        part = part.strip(" ")
+        if part in ("", ".", ".."):
+            if part == ".." and parts:
+                parts.pop()
+            continue
+        part = part.strip(" .")
+        if not part:
+            continue
+        parts.append(part)
+    if not parts:
         raise ValueError("filename is empty after sanitizing")
-    if not name.lower().endswith(".safetensors"):
-        name += ".safetensors"
-    return name
+    result = "/".join(parts)
+    if not result.lower().endswith(".safetensors"):
+        result += ".safetensors"
+    return result
 
 
 def named_cache_path(filename: str) -> Path:
@@ -165,6 +178,7 @@ def materialize_named(source: Path, filename: str) -> Path:
             return target
     except OSError:
         pass
+    target.parent.mkdir(parents=True, exist_ok=True)
     part = target.with_name(target.name + ".part")
     try:
         try:

@@ -39,9 +39,10 @@ H3 Motion Context Load Latent from URL.status
 - **latent_url** — 完整的 `.safetensors` 直链 URL（query 参数原样保留，
   包括签名 query）。
 - **refresh** — 强制重新下载，而不是复用 URL 缓存。
-- **filename** — 下载文件的可选显示名，如 `clip_00002.safetensors`。
-  留空则使用哈希命名的缓存文件。名称会被消毒并存放于下载缓存目录内
-  （优先硬链接，不占额外磁盘）。
+- **filename** — 下载文件的可选显示名，如 `clip_00002.safetensors`；
+  支持子目录，如 `video/clip_00002.safetensors`。留空则使用哈希命名的
+  缓存文件。名称会被消毒并存放于下载缓存目录内（优先硬链接，不占额外
+  磁盘）。
 - **vae / audio_vae**（可选）— 把同一份文件解码为画面/音频，用于
   独立验证或 Video Merge 拼接。
 

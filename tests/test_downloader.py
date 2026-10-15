@@ -125,8 +125,11 @@ class DownloaderTests(unittest.TestCase):
             ("clip_2.safetensors", "clip_2.safetensors"),
             ("clip_2", "clip_2.safetensors"),
             ("../clip_2.safetensors", "clip_2.safetensors"),
-            # basename first drops the directory part, then illegal chars.
-            ('sub/dir?clip*2.safetensors', "dirclip2.safetensors"),
+            ("video/clip_0001.safetensors", "video/clip_0001.safetensors"),
+            ("video/../clip.safetensors", "clip.safetensors"),
+            ("..\\sub\\clip.safetensors", "sub/clip.safetensors"),
+            # traversal parts are dropped, subdirectories kept.
+            ('sub/dir?clip*2.safetensors', "sub/dirclip2.safetensors"),
             ("  ", ValueError),
             ("", ValueError),
         ):
@@ -150,6 +153,17 @@ class DownloaderTests(unittest.TestCase):
                 # Same source again: no error, same target.
                 again = downloader.materialize_named(source, "clip_2.safetensors")
                 self.assertEqual(again, target)
+
+    def test_materialize_named_with_subdirectory(self):
+        with mock.patch.object(downloader, "_cache_dir") as cache_dir:
+            with self.create_temp_dir() as temporary:
+                directory = __import__("pathlib").Path(temporary)
+                cache_dir.return_value = directory
+                source = directory / "source.safetensors"
+                source.write_bytes(b"latent")
+                target = downloader.materialize_named(source, "video/clip_0001.safetensors")
+                self.assertEqual(target, directory / "video" / "clip_0001.safetensors")
+                self.assertEqual(target.read_bytes(), b"latent")
 
     def test_cache_dir_env_override(self):
         with self.create_temp_dir() as temporary:
