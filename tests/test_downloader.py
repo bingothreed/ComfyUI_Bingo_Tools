@@ -141,10 +141,10 @@ class DownloaderTests(unittest.TestCase):
                     self.assertEqual(downloader.sanitize_filename(raw), expected)
 
     def test_materialize_named(self):
-        with mock.patch.object(downloader, "_cache_dir") as cache_dir:
+        with mock.patch.object(downloader, "output_root") as output_root:
             with self.create_temp_dir() as temporary:
                 directory = __import__("pathlib").Path(temporary)
-                cache_dir.return_value = directory
+                output_root.return_value = directory
                 source = directory / "source.safetensors"
                 source.write_bytes(b"latent")
                 target = downloader.materialize_named(source, "clip_2.safetensors")
@@ -155,15 +155,25 @@ class DownloaderTests(unittest.TestCase):
                 self.assertEqual(again, target)
 
     def test_materialize_named_with_subdirectory(self):
-        with mock.patch.object(downloader, "_cache_dir") as cache_dir:
+        with mock.patch.object(downloader, "output_root") as output_root:
             with self.create_temp_dir() as temporary:
                 directory = __import__("pathlib").Path(temporary)
-                cache_dir.return_value = directory
+                output_root.return_value = directory
                 source = directory / "source.safetensors"
                 source.write_bytes(b"latent")
                 target = downloader.materialize_named(source, "video/clip_0001.safetensors")
                 self.assertEqual(target, directory / "video" / "clip_0001.safetensors")
                 self.assertEqual(target.read_bytes(), b"latent")
+
+    def test_output_root_uses_comfyui_output_dir(self):
+        import types
+        fake = types.ModuleType("folder_paths")
+        fake.get_output_directory = lambda: "F:/ComfyUI/output"
+        with mock.patch.dict("sys.modules", {"folder_paths": fake}):
+            self.assertEqual(
+                downloader.output_root(),
+                __import__("pathlib").Path("F:/ComfyUI/output"),
+            )
 
     def test_cache_dir_env_override(self):
         with self.create_temp_dir() as temporary:

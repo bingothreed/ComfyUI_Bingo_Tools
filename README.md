@@ -42,9 +42,9 @@ Inputs:
 - **refresh** — force a re-download instead of reusing the URL cache.
 - **filename** — optional display name for the downloaded file, e.g.
   `clip_00002.safetensors`; subdirectories like
-  `video/clip_00002.safetensors` are allowed. Empty keeps the hash-named
-  cache file. The name is sanitized and stored inside the download cache
-  directory (hardlinked, no extra disk space).
+  `video/clip_00002.safetensors` are allowed. The named copy is stored in
+  ComfyUI's output directory (hardlinked from the download cache, no extra
+  disk space). Empty keeps the hash-named cache file.
 - **vae / audio_vae** (optional) — decode the same file to images/audio for
   standalone verification or a Video Merge.
 
@@ -52,8 +52,9 @@ Outputs:
 
 - **latent** — the paired video/audio latent for `context_latent`, or `None`
   when the load failed.
-- **local_path** — absolute path of the downloaded file: the named copy when
-  `filename` is set, otherwise the hash-named cache file. Empty on failure.
+- **local_path** — absolute path of the downloaded file: the named copy in
+  ComfyUI's output directory when `filename` is set, otherwise the
+  hash-named cache file. Empty on failure.
 - **status** — `ok:cached` / `ok:downloaded` on success; on failure
   `error:url: ...`, `error:download: ...` or `error:file: ...` with the
   reason. Decode problems are appended as `decode:image:` / `decode:audio:`

@@ -21,7 +21,7 @@ try:
         URLPolicyError,
         download_cached,
         materialize_named,
-        named_cache_path,
+        named_output_path,
     )
 except ImportError:  # Allows direct loading by lightweight unit-test runners.
     from downloader import (
@@ -29,7 +29,7 @@ except ImportError:  # Allows direct loading by lightweight unit-test runners.
         URLPolicyError,
         download_cached,
         materialize_named,
-        named_cache_path,
+        named_output_path,
     )
 
 
@@ -99,7 +99,7 @@ class MiniMaxH3LoadAVLatentFromURL:
                     "default": "",
                     "tooltip": "Optional name for the downloaded file, e.g. clip_00002.safetensors "
                                "or video/clip_00002.safetensors. Empty keeps the hash-named cache "
-                               "file. The name is sanitized and stored inside the download cache "
+                               "file. The name is sanitized and stored inside ComfyUI's output "
                                "directory; local_path points at it.",
                 }),
             },
@@ -146,7 +146,7 @@ class MiniMaxH3LoadAVLatentFromURL:
             path, _cached = download_cached(latent_url)
             name = str(filename or "").strip()
             if name:
-                named = named_cache_path(name)
+                named = named_output_path(name)
                 if not named.is_file():
                     # The named copy does not exist yet: force execution so
                     # load() materializes it instead of serving a stale cache.

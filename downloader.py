@@ -160,19 +160,28 @@ def sanitize_filename(name: str) -> str:
     return result
 
 
-def named_cache_path(filename: str) -> Path:
-    """Path a user-named copy would take inside the download cache directory."""
-    return _cache_dir() / sanitize_filename(filename)
+def output_root() -> Path:
+    """ComfyUI's output directory; falls back to the download cache outside ComfyUI."""
+    try:
+        import folder_paths
+        return Path(folder_paths.get_output_directory())
+    except (ImportError, AttributeError):
+        return _cache_dir()
+
+
+def named_output_path(filename: str) -> Path:
+    """Path a user-named copy would take inside ComfyUI's output directory."""
+    return output_root() / sanitize_filename(filename)
 
 
 def materialize_named(source: Path, filename: str) -> Path:
-    """Expose ``source`` under a user-chosen name in the cache directory.
+    """Expose ``source`` under a user-chosen name in ComfyUI's output directory.
 
     Hardlinks first (same bytes, no extra disk), falls back to a copy when
     the filesystem refuses. Atomic via a ``.part`` sibling + ``os.replace``.
     If the target already exists with the same content it is left alone.
     """
-    target = named_cache_path(filename)
+    target = named_output_path(filename)
     try:
         if target.is_file() and os.path.samefile(str(source), str(target)):
             return target
