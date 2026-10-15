@@ -70,22 +70,19 @@ URL 加载的 latent 只代表上一段。
 
 ## 配置
 
-节点接受任意 HTTPS 直链（GitHub raw、Hugging Face、R2/S3 预签名 URL
-等）。每条 URL 必须使用 HTTPS、不带凭据，且解析到公网地址（localhost /
-内网地址会被拒绝）；单次下载上限 4 GB。如需限制允许的主机——例如在
-共享或多用户环境——可把 `MINIMAX_H3_URL_ALLOWED_HOSTS` 设为逗号分隔的
-主机列表。节点不支持 cookie 或认证头，因此请使用公开的直链文件托管。
-ComfyUI 所在主机或执行容器必须允许出站 HTTPS。
+URL 必须是文件直链，不是渲染网页的分享页：用 GitHub 的 `raw` 链接、
+Hugging Face 的 resolve 链接、R2/S3 预签名下载链接等。OneDrive /
+Google Drive 的分享链接是网页——Google Drive 对超过约 100 MB 的文件
+还会插入病毒扫描确认页，本节点不处理该情况。文件必须是公开的：节点
+不会携带 cookie 或认证头。
 
-注意：OneDrive / Google Drive 的分享链接是网页而不是文件本身，请使用
-直链。Google Drive 对超过约 100 MB 的文件会插入病毒扫描确认页，本节点
-不处理该情况；latent 建议放在直链文件托管上（GitHub Releases、
-Hugging Face、R2/S3 预签名 URL 等）。
-
-下载缓存位于 `<ComfyUI>/temp/minimax_h3_url/`（脱离 ComfyUI 运行时
-为系统临时目录）。ComfyUI 重启时会清空 temp 目录，因此如需让 latent
-跨重启保留，请把 `MINIMAX_H3_URL_CACHE_DIR` 指向一个持久位置，例如：
+下载缓存位于 `<ComfyUI>/temp/minimax_h3_url/`。ComfyUI 重启时会清空
+temp 目录，因此如需让 latent 跨重启保留，请把 `MINIMAX_H3_URL_CACHE_DIR`
+指向一个持久位置，例如：
 
 ```text
 MINIMAX_H3_URL_CACHE_DIR=F:\ComfyUI-Datasets\output\h3_context
 ```
+
+（可选）共享环境如需限制允许的主机，可把 `MINIMAX_H3_URL_ALLOWED_HOSTS`
+设为逗号分隔的主机列表。

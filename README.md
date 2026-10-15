@@ -75,26 +75,20 @@ VAE decode or sampler input.
 
 ## Configuration
 
-The node accepts any direct HTTPS URL (GitHub raw, Hugging Face, R2/S3
-presigned URLs, ...). Every URL must use HTTPS, carry no credentials, and
-resolve to a public address (localhost/private-network URLs are blocked);
-downloads are capped at 4 GB. To restrict which hosts are allowed — for
-example on a shared or multi-user setup — set
-`MINIMAX_H3_URL_ALLOWED_HOSTS` to a comma-separated host list. The node
-does not support cookies or authentication headers, so use public direct
-file hosts. The ComfyUI host or execution container must permit outbound
-HTTPS.
+The URL must be a direct file link, not a share page that renders HTML:
+use GitHub `raw` links, Hugging Face resolve URLs, R2/S3 presigned download
+links, etc. OneDrive/Google Drive share links are HTML pages — Google Drive
+also adds a virus-scan confirmation page for files over ~100 MB, which the
+node does not handle. The file must be public: the node does not send
+cookies or authentication headers.
 
-Note: OneDrive/Google Drive share links are HTML pages, not the file itself —
-use a direct download URL. Google Drive adds a virus-scan confirmation page
-for files over ~100 MB, which this node does not handle; prefer direct file
-hosts (GitHub Releases, Hugging Face, R2/S3 presigned URLs) for latents.
-
-Downloads are cached in `<ComfyUI>/temp/minimax_h3_url/` (system temp
-directory outside ComfyUI). ComfyUI wipes its temp folder on restart, so
-point `MINIMAX_H3_URL_CACHE_DIR` at a persistent location to keep
-latents across restarts, e.g.:
+Downloads are cached in `<ComfyUI>/temp/minimax_h3_url/`. ComfyUI wipes its
+temp folder on restart, so point `MINIMAX_H3_URL_CACHE_DIR` at a persistent
+location to keep latents across restarts, e.g.:
 
 ```text
 MINIMAX_H3_URL_CACHE_DIR=F:\ComfyUI-Datasets\output\h3_context
 ```
+
+(Optional) To restrict which hosts are allowed on a shared setup, set
+`MINIMAX_H3_URL_ALLOWED_HOSTS` to a comma-separated host list.
