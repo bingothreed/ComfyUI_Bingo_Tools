@@ -8,7 +8,7 @@ HTTPS URL 加载 MiniMax H3 音视频（AV）潜空间文件。
 该节点下载指向 MiniMax H3 AV latent 文件的完整 HTTPS 直链——通常是
 **MiniMax H3 Save AV Latent** 节点产出的文件，但任何直链文件 URL 都
 可以——返回配对的视频/音频 latent，用于
-`H3 Motion Context.context_latent`。RunningHub 和本地 ComfyUI 都能用。
+`H3 Motion Context.context_latent`。
 
 ## 截图
 
@@ -76,8 +76,7 @@ URL 加载的 latent 只代表上一段。
 以逗号分隔列表添加，设为 `*` 即接受任意主机。无论是否使用通配符，URL
 都必须使用 HTTPS 且解析到公网地址（localhost / 内网地址仍然会被拒绝）。
 节点不支持 cookie 或认证头，因此请使用公开的直链文件托管。ComfyUI
-所在主机或执行容器必须允许出站 HTTPS。旧的 `MINIMAX_H3_RUNNINGHUB_*`
-变量名仍然有效。
+所在主机或执行容器必须允许出站 HTTPS。
 
 注意：OneDrive / Google Drive 的分享链接是网页而不是文件本身，请使用
 直链。Google Drive 对超过约 100 MB 的文件会插入病毒扫描确认页，本节点

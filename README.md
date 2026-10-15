@@ -8,8 +8,7 @@ MiniMax H3 AV latents from a direct HTTPS URL for H3 Motion Context.
 This custom node downloads a complete HTTPS URL pointing to a MiniMax H3 AV
 latent file — typically one produced by the **MiniMax H3 Save AV Latent**
 node, but any direct file URL works — and returns the paired video/audio
-latent for `H3 Motion Context.context_latent`. It works on RunningHub and
-local ComfyUI alike.
+latent for `H3 Motion Context.context_latent`.
 
 ## Screenshot
 
@@ -84,8 +83,7 @@ or set it to `*` to accept any host. Every URL must still use HTTPS and
 resolve to a public address (localhost/private-network URLs stay blocked).
 The node does not support cookies or authentication headers, so use public
 direct file hosts. The ComfyUI host or execution container must permit
-outbound HTTPS. The older `MINIMAX_H3_RUNNINGHUB_*` variable names still
-work.
+outbound HTTPS.
 
 Note: OneDrive/Google Drive share links are HTML pages, not the file itself —
 use a direct download URL. Google Drive adds a virus-scan confirmation page
