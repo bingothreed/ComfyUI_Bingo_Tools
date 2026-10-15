@@ -103,8 +103,8 @@ class MiniMaxH3LoadAVLatentFromURL:
                 }),
                 "save_to_temp": ("BOOLEAN", {
                     "default": True,
-                    "tooltip": "Store the named copy (see filename) in the download cache inside "
-                               "ComfyUI's temp folder; off stores it in ComfyUI's output directory.",
+                    "tooltip": "Store the named copy (see filename) directly in ComfyUI's temp "
+                               "folder; off stores it in ComfyUI's output directory.",
                 }),
             },
             "optional": {

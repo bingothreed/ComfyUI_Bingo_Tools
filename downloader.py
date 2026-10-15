@@ -169,9 +169,18 @@ def output_root() -> Path:
         return _cache_dir()
 
 
+def temp_root() -> Path:
+    """ComfyUI's temp directory; falls back to the download cache outside ComfyUI."""
+    try:
+        import folder_paths
+        return Path(folder_paths.get_temp_directory())
+    except (ImportError, AttributeError):
+        return _cache_dir()
+
+
 def named_path(filename: str, to_temp: bool = False) -> Path:
-    """Path a user-named copy would take: the download cache or ComfyUI's output dir."""
-    root = _cache_dir() if to_temp else output_root()
+    """Path a user-named copy would take: ComfyUI's temp dir or output dir."""
+    root = temp_root() if to_temp else output_root()
     return root / sanitize_filename(filename)
 
 

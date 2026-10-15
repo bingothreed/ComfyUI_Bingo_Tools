@@ -44,10 +44,10 @@ Inputs:
   `clip_00002.safetensors`; subdirectories like
   `video/clip_00002.safetensors` are allowed. Empty keeps the hash-named
   cache file.
-- **save_to_temp** — where the named copy goes: on (default) keeps it in
-  the download cache (ComfyUI's temp folder); off stores it in ComfyUI's
-  output directory. Hardlinked from the download cache, so no extra disk
-  space.
+- **save_to_temp** — where the named copy goes: on (default) places it
+  directly in ComfyUI's temp folder (`<ComfyUI>/temp/<filename>`); off
+  stores it in ComfyUI's output directory. Hardlinked from the download
+  cache, so no extra disk space.
 - **vae / audio_vae** (optional) — decode the same file to images/audio for
   standalone verification or a Video Merge.
 
@@ -56,7 +56,7 @@ Outputs:
 - **latent** — the paired video/audio latent for `context_latent`, or `None`
   when the load failed.
 - **local_path** — absolute path of the downloaded file: the named copy when
-  `filename` is set (download cache by default, ComfyUI's output directory
+  `filename` is set (ComfyUI's temp folder by default, the output directory
   with `save_to_temp` off), otherwise the hash-named cache file. Empty on
   failure.
 - **status** — `ok:cached` / `ok:downloaded` on success; on failure
